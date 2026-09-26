@@ -100,7 +100,7 @@ const Login = () => {
             color="text.secondary"
             sx={{ mb: 3 }}
           >
-            Sign in to continue
+            Sign in to continue - Continuous Deployment
           </Typography>
 
           {error && (
