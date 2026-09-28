@@ -208,3 +208,4 @@ crash.log
 
 # Local workflow backup
 01-ci-backup.yml
+azure-credentials.json

@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: user-service
-          image: placeholder
+          image: sachinweek07acr3303new.azurecr.io/koalatech-user-service:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
