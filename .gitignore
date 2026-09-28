@@ -197,3 +197,14 @@ cython_debug/
 .cursorindexingignore
 
 node_modules/
+
+# Terraform local files
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfplan
+crash.log
+
+# Local workflow backup
+01-ci-backup.yml

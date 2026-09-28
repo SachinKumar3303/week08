@@ -18,6 +18,47 @@ on:
 jobs:
 
   # =========================================================
+  # Terraform Infrastructure Validation
+  # =========================================================
+  terraform:
+    name: Terraform Infrastructure
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        working-directory: terraform
+        run: terraform init
+
+      - name: Terraform Validate
+        working-directory: terraform
+        run: terraform validate
+
+      - name: Terraform Plan
+        working-directory: terraform
+        run: |
+          terraform plan \
+            -var="location=Australia East" \
+            -var="resource_group_name=koalatech-week08-rg" \
+            -var="acr_name=koalatechacr3308" \
+            -var="storage_account_name=koalatechst3308" \
+            -var="aks_cluster_name=koalatech-aks-week08" \
+            -var="aks_dns_prefix=koalatech" \
+            -var="aks_node_count=3" \
+            -var="aks_node_vm_size=Standard_D2s_v3" \
+            -var="environment=development"
+
+  # =========================================================
   # Backend Tests
   # =========================================================
   backend-test:
@@ -117,6 +158,7 @@ jobs:
     # All backend tests must pass before this job starts
     needs:
       - backend-test
+      - terraform
 
     # Build and push when code is pushed to main or manually triggered
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
@@ -164,6 +206,13 @@ jobs:
             --platform linux/amd64 \
             -t ${{ vars.ACR_LOGIN_SERVER }}/${{ matrix.image }}:${{ github.sha }} \
             ./${{ matrix.service }}
+
+      - name: Docker Scout vulnerability scan
+        uses: docker/scout-action@v1
+        with:
+          command: cves,recommendations
+          image: ${{ vars.ACR_LOGIN_SERVER }}/${{ matrix.image }}:${{ github.sha }}
+          only-severities: critical,high
 
       - name: Push Docker image with commit SHA
         run: |
