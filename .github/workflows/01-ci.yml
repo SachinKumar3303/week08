@@ -58,6 +58,46 @@ jobs:
             -var="aks_node_vm_size=Standard_D2s_v3" \
             -var="environment=development"
 
+
+  # =========================================================
+  # Monitoring Validation
+  # =========================================================
+  monitoring:
+    name: Monitoring Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to Azure
+        uses: azure/login@v3
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Get AKS credentials
+        run: |
+          az aks get-credentials \
+            --resource-group ${{ vars.AKS_RESOURCE_GROUP }} \
+            --name ${{ vars.AKS_CLUSTER_NAME }} \
+            --overwrite-existing
+
+      - name: Validate Prometheus and Grafana monitoring
+        run: |
+          echo "Checking monitoring namespace..."
+          kubectl get pods -n monitoring
+
+          echo "Checking monitoring services..."
+          kubectl get services -n monitoring
+
+          echo "Validating Prometheus..."
+          kubectl get deployment monitoring-kube-prometheus-prometheus-operator \
+            -n monitoring
+
+          echo "Validating Grafana..."
+          kubectl get deployment monitoring-grafana \
+            -n monitoring
+
   # =========================================================
   # Backend Tests
   # =========================================================
@@ -159,6 +199,7 @@ jobs:
     needs:
       - backend-test
       - terraform
+      - monitoring
 
     # Build and push when code is pushed to main or manually triggered
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
