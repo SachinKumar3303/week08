@@ -91,7 +91,7 @@ jobs:
           kubectl get services -n monitoring
 
           echo "Validating Prometheus..."
-          kubectl get deployment monitoring-kube-prometheus-prometheus-operator \
+          kubectl get deployment monitoring-kube-prometheus-operator \
             -n monitoring
 
           echo "Validating Grafana..."
